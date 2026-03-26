@@ -155,19 +155,21 @@ namespace D3_Sqex03DataMessage
         }
         public static void ImportDirectory(string dir, ProgressBar progressBar)
         {
-            string[] files = Directory.GetFiles(dir, ".txt", SearchOption.TopDirectoryOnly);
+            string[] files = Directory.GetFiles(dir, "*.txt", SearchOption.TopDirectoryOnly);
             double percent = 100.0 / MainUI._DataMessage.Count;
             ProgressBar(progressBar, (int)percent);
             foreach (DataMessage data in MainUI._DataMessage)
             {
-                string file = Array.Find(files, element => Path.GetFileName(element) == data.Name);
+                string file = Array.Find(files, element => string.Equals(Path.GetFileNameWithoutExtension(element), data.Name, StringComparison.OrdinalIgnoreCase));
                 if (!string.IsNullOrEmpty(file))
                 {
                     string[] strings = File.ReadAllLines(file);
-                    for (int i = 0; i < data.Strings.Count; i++)
+                    int count = Math.Min(data.Strings.Count, strings.Length);
+                    for (int i = 0; i < count; i++)
                     {
-                        if (strings[i].Contains("{#Name=")) strings[i] = strings[i].Split(new string[] { "{#Name=" }, StringSplitOptions.None).First();
-                        data.Strings[i] = strings[i];
+                        string line = strings[i];
+                        if (line.Contains("{#Name=")) line = line.Split(new string[] { "{#Name=" }, StringSplitOptions.None).First();
+                        data.Strings[i] = line;
                     }
                 }
                 percent += 100.0 / MainUI._DataMessage.Count;
